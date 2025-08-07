@@ -15,6 +15,15 @@ const manifest = defineManifest({
     "38": "src/assets/icon38.png",
     "128": "src/assets/icon128.png",
   },
+  action: {
+    default_icon: {
+      "16": "src/assets/icon16.png",
+      "19": "src/assets/icon19.png",
+      "38": "src/assets/icon38.png",
+      "128": "src/assets/icon128.png",
+    },
+    default_title: "Miro",
+  },
   background: {
     service_worker: "src/background.ts",
     type: "module",
@@ -26,6 +35,10 @@ const manifest = defineManifest({
       js: ["src/content.tsx"],
     },
   ],
+  options_ui: {
+    page: "src/options.html",
+    open_in_tab: true,
+  },
 });
 
 export default defineConfig({
@@ -36,6 +49,7 @@ export default defineConfig({
       input: {
         content: "src/content.tsx",
         background: "src/background.ts",
+        options: "src/options.html",
       },
     },
   },
