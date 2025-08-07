@@ -82,20 +82,7 @@ jobs:
 
       - name: Create Firefox zip
         run: |
-          cd dist
-          # Create a copy of the manifest for Firefox compatibility
-          cp manifest.json firefox-manifest.json
-          
-          # Create Firefox-specific build
-          mkdir -p firefox-build
-          cp -r * firefox-build/
-          cd firefox-build
-          
-          # Modify manifest for Firefox if needed
-          # (Add any Firefox-specific changes here if required)
-          
-          zip -r ../../firefox.zip .
-          cd ../..
+          node firefox.cjs
 
       - name: Create Chrome zip
         run: |

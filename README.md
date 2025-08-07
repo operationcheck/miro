@@ -73,6 +73,11 @@ Build the extension:
 pnpm build
 ```
 
+Build Firefox version:
+```bash
+pnpm build:firefox
+```
+
 ### Chrome Installation
 
 1. Clone this repository
