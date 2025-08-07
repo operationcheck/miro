@@ -7,8 +7,8 @@ import { Button } from "./components/Button";
 import logger from "./logger";
 
 // Miro functionality constants
-const RGB_COLOR_GREEN = 'rgb(0, 197, 65)';
-const TYPE_MOVIE_ROUNDED_PLUS = 'movie-rounded-plus';
+const RGB_COLOR_GREEN = "rgb(0, 197, 65)";
+const TYPE_MOVIE_ROUNDED_PLUS = "movie-rounded-plus";
 const REDIRECT_TIME = 3000;
 const COOL_TIME = 5000;
 
@@ -33,7 +33,7 @@ let backgroundAutoPlay = false;
 let returnToChapter = true;
 let hideUI = false;
 let userInteracted = false;
-let lastCheckedUrl = '';
+let lastCheckedUrl = "";
 let urlCheckIntervalId: number;
 
 // Miro utility functions
@@ -46,45 +46,45 @@ function getIsValidPath(): boolean {
 }
 
 function findIndex(data: ListItem[]): number {
-  return data.findIndex((item) => item.type === 'main' && !item.passed);
+  return data.findIndex((item) => item.type === "main" && !item.passed);
 }
 
 function getList(): ListItem[] {
   let elements: NodeListOf<HTMLLIElement>;
 
   elements = document.querySelectorAll<HTMLLIElement>(
-    'ul[aria-label="必修教材リスト"] > li',
+    'ul[aria-label="必修教材リスト"] > li'
   );
 
   if (elements.length === 0) {
     elements = document.querySelectorAll<HTMLLIElement>(
-      'ul[aria-label="課外教材リスト"] > li',
+      'ul[aria-label="課外教材リスト"] > li'
     );
 
     if (elements.length === 0) {
-      logger.error('No elements found.');
+      logger.error("No elements found.");
       return [];
     }
   }
 
   return Array.from(elements).map((element) => {
     const titleElement = element.querySelector<HTMLSpanElement>(
-      'div div div span:nth-child(2)',
+      "div div div span:nth-child(2)"
     );
-    const title = titleElement?.textContent?.trim() ?? '';
-    const iconElement = element.querySelector<HTMLElement>('div > svg');
+    const title = titleElement?.textContent?.trim() ?? "";
+    const iconElement = element.querySelector<HTMLElement>("div > svg");
     const iconColor = iconElement
       ? window.getComputedStyle(iconElement).color
-      : '';
+      : "";
     const passed =
       (iconColor === RGB_COLOR_GREEN ||
-        element.textContent?.includes('視聴済み') ||
-        element.textContent?.includes('理解した')) ??
+        element.textContent?.includes("視聴済み") ||
+        element.textContent?.includes("理解した")) ??
       false;
     const type =
-      iconElement?.getAttribute('type') === TYPE_MOVIE_ROUNDED_PLUS
-        ? 'supplement'
-        : 'main';
+      iconElement?.getAttribute("type") === TYPE_MOVIE_ROUNDED_PLUS
+        ? "supplement"
+        : "main";
     return { title, passed, type };
   });
 }
@@ -94,26 +94,26 @@ async function moveElement(number: number): Promise<void> {
     let element: HTMLElement | null = null;
 
     element = document.querySelector<HTMLElement>(
-      `ul[aria-label="必修教材リスト"] li:nth-child(${number}) div`,
+      `ul[aria-label="必修教材リスト"] li:nth-child(${number}) div`
     );
 
     if (element === null) {
       element = document.querySelector<HTMLElement>(
-        `ul[aria-label="課外教材リスト"] li:nth-child(${number}) div`,
+        `ul[aria-label="課外教材リスト"] li:nth-child(${number}) div`
       );
     }
 
     if (element === null) {
       reject(
-        new Error(`Error: cannot find an element with the number ${number}`),
+        new Error(`Error: cannot find an element with the number ${number}`)
       );
     } else {
       element.dispatchEvent(
-        new MouseEvent('click', {
+        new MouseEvent("click", {
           bubbles: true,
           cancelable: true,
           view: window,
-        }),
+        })
       );
       resolve();
     }
@@ -124,13 +124,13 @@ function getVideoPlayer(): HTMLMediaElement | null {
   try {
     if (videoPlayer === null) {
       const iframeElement = document.querySelector<HTMLIFrameElement>(
-        'iframe[title="教材"]',
+        'iframe[title="教材"]'
       );
       const iframeDocument =
         iframeElement?.contentDocument ??
         iframeElement?.contentWindow?.document;
       videoPlayer =
-        iframeDocument?.querySelector<HTMLMediaElement>('video') ?? null;
+        iframeDocument?.querySelector<HTMLMediaElement>("video") ?? null;
     }
     return videoPlayer;
   } catch {
@@ -148,39 +148,39 @@ function handleVideoEnd(): void {
     lastExecutionTime = Date.now();
     if (document.hidden && !backgroundAutoPlay) {
       if (!previousBackgroundAutoPlay) {
-        logger.info('Did not move because it was playing in the background');
+        logger.info("Did not move because it was playing in the background");
       }
       previousBackgroundAutoPlay = true;
       return;
     }
 
     if (document.hidden && backgroundAutoPlay) {
-      logger.info('Playback proceeds in the background');
+      logger.info("Playback proceeds in the background");
     }
 
     previousBackgroundAutoPlay = false;
-    logger.info('Video ended.');
+    logger.info("Video ended.");
 
     const list = getList();
     const index = findIndex(list);
     if (index !== -1) {
       moveElement(index + 1)
         .then(() => {
-          logger.info('Moving to the next video.');
+          logger.info("Moving to the next video.");
           lastMovingVideoTime = Date.now();
         })
         .catch(logger.error);
     } else if (!completed) {
       completed = true;
-      window.alert('All videos have been completed.');
-      logger.info('All videos have been completed.');
+      window.alert("All videos have been completed.");
+      logger.info("All videos have been completed.");
 
       if (returnToChapter) {
         logger.info(`Move to chapter after ${REDIRECT_TIME / 1000} seconds...`);
         setTimeout(() => {
           const url = new URL(window.location.href);
-          const course = url.pathname.split('/')[2];
-          const chapter = url.pathname.split('/')[4];
+          const course = url.pathname.split("/")[2];
+          const chapter = url.pathname.split("/")[4];
           window.location.href = `/courses/${course}/chapters/${chapter}`;
         }, REDIRECT_TIME);
       }
@@ -190,59 +190,78 @@ function handleVideoEnd(): void {
 
 // AI and Exercise functions
 function htmlToMarkdown(html: string): string {
-  const tempDiv = document.createElement('div');
+  const tempDiv = document.createElement("div");
   tempDiv.innerHTML = html;
 
   function processNode(node: Node): string {
     if (node.nodeType === Node.TEXT_NODE) {
-      return node.textContent?.trim() || '';
+      return node.textContent?.trim() || "";
     }
 
     if (node.nodeType === Node.ELEMENT_NODE) {
       const element = node as Element;
 
-      if (element.classList.contains('indicators')) {
-        return '';
+      if (element.classList.contains("indicators")) {
+        return "";
       }
 
       const tagName = element.tagName.toLowerCase();
-      const children = Array.from(node.childNodes).map(processNode).join('');
+      const children = Array.from(node.childNodes).map(processNode).join("");
 
       switch (tagName) {
-        case 'h1': return `# ${children}\n\n`;
-        case 'h2': return `## ${children}\n\n`;
-        case 'h3': return `### ${children}\n\n`;
-        case 'h4': return `#### ${children}\n\n`;
-        case 'h5': return `##### ${children}\n\n`;
-        case 'h6': return `###### ${children}\n\n`;
-        case 'p': return `${children}\n\n`;
-        case 'br': return '\n';
-        case 'strong':
-        case 'b': return `**${children}**`;
-        case 'em':
-        case 'i': return `*${children}*`;
-        case 'code': return `\`${children}\``;
-        case 'pre': return `\`\`\`\n${children}\n\`\`\`\n\n`;
-        case 'ul': return `${children}\n`;
-        case 'ol': return `${children}\n`;
-        case 'li': return `- ${children}\n`;
-        case 'a': {
-          const href = element.getAttribute('href');
+        case "h1":
+          return `# ${children}\n\n`;
+        case "h2":
+          return `## ${children}\n\n`;
+        case "h3":
+          return `### ${children}\n\n`;
+        case "h4":
+          return `#### ${children}\n\n`;
+        case "h5":
+          return `##### ${children}\n\n`;
+        case "h6":
+          return `###### ${children}\n\n`;
+        case "p":
+          return `${children}\n\n`;
+        case "br":
+          return "\n";
+        case "strong":
+        case "b":
+          return `**${children}**`;
+        case "em":
+        case "i":
+          return `*${children}*`;
+        case "code":
+          return `\`${children}\``;
+        case "pre":
+          return `\`\`\`\n${children}\n\`\`\`\n\n`;
+        case "ul":
+          return `${children}\n`;
+        case "ol":
+          return `${children}\n`;
+        case "li":
+          return `- ${children}\n`;
+        case "a": {
+          const href = element.getAttribute("href");
           return href ? `[${children}](${href})` : children;
         }
-        case 'img': {
-          const src = element.getAttribute('src');
-          const alt = element.getAttribute('alt') || '';
+        case "img": {
+          const src = element.getAttribute("src");
+          const alt = element.getAttribute("alt") || "";
           return src ? `![${alt}](${src})` : alt;
         }
-        case 'blockquote': return `> ${children}\n\n`;
-        case 'hr': return '---\n\n';
-        case 'div':
-        case 'span': return children;
-        default: return children;
+        case "blockquote":
+          return `> ${children}\n\n`;
+        case "hr":
+          return "---\n\n";
+        case "div":
+        case "span":
+          return children;
+        default:
+          return children;
       }
     }
-    return '';
+    return "";
   }
 
   return processNode(tempDiv).trim();
@@ -250,18 +269,18 @@ function htmlToMarkdown(html: string): string {
 
 function getExerciseContent(): string | null {
   try {
-    let exerciseElements = document.querySelectorAll('.exercise');
+    let exerciseElements = document.querySelectorAll(".exercise");
 
     if (exerciseElements.length === 0) {
       const iframeElement = document.querySelector<HTMLIFrameElement>(
-        'iframe[title="教材"]',
+        'iframe[title="教材"]'
       );
       const iframeDocument =
         iframeElement?.contentDocument ??
         iframeElement?.contentWindow?.document;
 
       if (iframeDocument) {
-        exerciseElements = iframeDocument.querySelectorAll('.exercise');
+        exerciseElements = iframeDocument.querySelectorAll(".exercise");
       }
     }
 
@@ -269,10 +288,10 @@ function getExerciseContent(): string | null {
       return null;
     }
 
-    let markdownContent = '';
+    let markdownContent = "";
     exerciseElements.forEach((element, index) => {
       if (index > 0) {
-        markdownContent += '\n---\n\n';
+        markdownContent += "\n---\n\n";
       }
       markdownContent += `# Exercise ${index + 1}\n\n`;
       markdownContent += htmlToMarkdown(element.innerHTML);
@@ -291,15 +310,15 @@ async function copyToClipboard(text: string): Promise<boolean> {
       await navigator.clipboard.writeText(text);
       return true;
     }
-    const textArea = document.createElement('textarea');
+    const textArea = document.createElement("textarea");
     textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-    const success = document.execCommand('copy');
+    const success = document.execCommand("copy");
     document.body.removeChild(textArea);
     return success;
   } catch (error) {
@@ -319,8 +338,10 @@ const ButtonContainer: React.FC = () => {
 
   // Initialize miro functionality and load settings
   useEffect(() => {
-    logger.info('Extension loaded.');
-    logger.info('Please star the repository if you like!\nhttps://github.com/operationcheck/miro');
+    logger.info("Extension loaded.");
+    logger.info(
+      "Please star the repository if you like!\nhttps://github.com/operationcheck/miro"
+    );
 
     (async () => {
       // Load settings
@@ -328,14 +349,20 @@ const ButtonContainer: React.FC = () => {
         "buttonPosition",
         "minimalMode",
         "enabled",
-        "autoPlayEnabled", 
+        "autoPlayEnabled",
         "backgroundAutoPlay",
         "returnToChapter",
-        "hideUI"
+        "hideUI",
       ]);
 
       if (settings.buttonPosition) {
-        setButtonPosition(settings.buttonPosition as "right-top" | "right-bottom" | "left-top" | "left-bottom");
+        setButtonPosition(
+          settings.buttonPosition as
+            | "right-top"
+            | "right-bottom"
+            | "left-top"
+            | "left-bottom"
+        );
       }
       if (settings.minimalMode !== undefined) {
         setMinimalMode(settings.minimalMode as boolean);
@@ -368,7 +395,13 @@ const ButtonContainer: React.FC = () => {
       [key: string]: browser.Storage.StorageChange;
     }) => {
       if (changes.buttonPosition) {
-        setButtonPosition(changes.buttonPosition.newValue as "right-top" | "right-bottom" | "left-top" | "left-bottom");
+        setButtonPosition(
+          changes.buttonPosition.newValue as
+            | "right-top"
+            | "right-bottom"
+            | "left-top"
+            | "left-bottom"
+        );
       }
       if (changes.minimalMode) {
         setMinimalMode(changes.minimalMode.newValue as boolean);
@@ -376,7 +409,7 @@ const ButtonContainer: React.FC = () => {
       if (changes.enabled !== undefined) {
         isEnabled = changes.enabled.newValue as boolean;
         setExtensionEnabled(changes.enabled.newValue as boolean);
-        logger.info(`Extension is now ${isEnabled ? 'enabled' : 'disabled'}`);
+        logger.info(`Extension is now ${isEnabled ? "enabled" : "disabled"}`);
       }
       if (changes.autoPlayEnabled !== undefined) {
         autoPlayEnabled = changes.autoPlayEnabled.newValue as boolean;
@@ -392,22 +425,22 @@ const ButtonContainer: React.FC = () => {
 
     // Message listener for context menu actions
     browser.runtime.onMessage.addListener((message: unknown) => {
-      if (message && typeof message === 'object' && 'action' in message) {
+      if (message && typeof message === "object" && "action" in message) {
         const action = (message as { action: string }).action;
-        
-        if (action === 'copyExercise') {
+
+        if (action === "copyExercise") {
           handleCopyExercise();
-        } else if (action === 'askChatGPT') {
-          handleAskAI('ChatGPT', 'https://chatgpt.com/?q=');
-        } else if (action === 'askClaude') {
-          handleAskAI('Claude', 'https://claude.ai/new?q=');
-        } else if (action === 'askGenspark') {
-          handleAskAI('Genspark', 'https://www.genspark.ai/search?query=');
-        } else if (action === 'askFelo') {
-          handleAskAI('Felo', 'https://felo.ai/ja/search?q=');
-        } else if (action === 'askPerplexity') {
-          handleAskAI('Perplexity', 'https://www.perplexity.ai/search?q=');
-        } else if (action === 'copyAIPrompt') {
+        } else if (action === "askChatGPT") {
+          handleAskAI("ChatGPT", "https://chatgpt.com/?q=");
+        } else if (action === "askClaude") {
+          handleAskAI("Claude", "https://claude.ai/new?q=");
+        } else if (action === "askGenspark") {
+          handleAskAI("Genspark", "https://www.genspark.ai/search?query=");
+        } else if (action === "askFelo") {
+          handleAskAI("Felo", "https://felo.ai/ja/search?q=");
+        } else if (action === "askPerplexity") {
+          handleAskAI("Perplexity", "https://www.perplexity.ai/search?q=");
+        } else if (action === "copyAIPrompt") {
           handleCopyAIPrompt();
         }
       }
@@ -424,32 +457,32 @@ const ButtonContainer: React.FC = () => {
   function startMiroFunctionality() {
     checkForSpecialContent();
     startUrlMonitoring();
-    
+
     // Video player monitoring
     const intervalId = setInterval(() => {
       if (getIsValidPath()) {
         videoPlayer = getVideoPlayer();
         if (videoPlayer !== null) {
           if (!previousVideoPlayer) {
-            logger.info('Video player found.');
+            logger.info("Video player found.");
             createPlayButton();
           }
           previousVideoPlayer = true;
-          videoPlayer.setAttribute('playsinline', '');
-          videoPlayer.setAttribute('muted', '');
-          videoPlayer.setAttribute('autoplay', '');
-          videoPlayer.setAttribute('controls', '');
+          videoPlayer.setAttribute("playsinline", "");
+          videoPlayer.setAttribute("muted", "");
+          videoPlayer.setAttribute("autoplay", "");
+          videoPlayer.setAttribute("controls", "");
 
           if (videoPlayer.ended) {
             handleVideoEnd();
           } else if (userInteracted && autoPlayEnabled && videoPlayer.paused) {
             videoPlayer.play().catch(logger.error);
           } else {
-            videoPlayer.addEventListener('ended', handleVideoEnd);
+            videoPlayer.addEventListener("ended", handleVideoEnd);
           }
           clearInterval(intervalId);
         } else if (Date.now() - lastVideoPlayerTime > COOL_TIME) {
-          logger.info('Video player not found.');
+          logger.info("Video player not found.");
           lastVideoPlayerTime = Date.now();
         }
       }
@@ -457,10 +490,10 @@ const ButtonContainer: React.FC = () => {
   }
 
   function createPlayButton() {
-    if (hideUI || document.getElementById('videoPlayButton')) return;
+    if (hideUI || document.getElementById("videoPlayButton")) return;
 
-    const button = document.createElement('button');
-    button.id = 'videoPlayButton';
+    const button = document.createElement("button");
+    button.id = "videoPlayButton";
     button.style.cssText = `
       position: fixed;
       z-index: 99999;
@@ -473,9 +506,9 @@ const ButtonContainer: React.FC = () => {
       bottom: 130px;
       right: 40px;
     `;
-    button.innerHTML = '<span>Play Video</span>';
+    button.innerHTML = "<span>Play Video</span>";
 
-    button.addEventListener('click', () => {
+    button.addEventListener("click", () => {
       userInteracted = true;
       if (videoPlayer) {
         videoPlayer.play().catch(logger.error);
@@ -491,13 +524,13 @@ const ButtonContainer: React.FC = () => {
     urlCheckIntervalId = window.setInterval(() => {
       checkForSpecialContent();
     }, 2000);
-    logger.info('URL monitoring started');
+    logger.info("URL monitoring started");
   }
 
   function stopUrlMonitoring(): void {
     if (urlCheckIntervalId) {
       clearInterval(urlCheckIntervalId);
-      logger.info('URL monitoring stopped');
+      logger.info("URL monitoring stopped");
     }
   }
 
@@ -508,25 +541,38 @@ const ButtonContainer: React.FC = () => {
     lastCheckedUrl = currentUrl;
     logger.info(`Checking URL for special content: ${currentUrl}`);
 
-    const specialKeywords = ['evaluation_test', 'essay_test', 'evaluation_report', 'essay_report'];
-    const foundKeyword = specialKeywords.find(keyword => currentUrl.includes(keyword));
+    const specialKeywords = [
+      "evaluation_test",
+      "essay_test",
+      "evaluation_report",
+      "essay_report",
+    ];
+    const foundKeyword = specialKeywords.find((keyword) =>
+      currentUrl.includes(keyword)
+    );
 
     if (foundKeyword) {
       const messages = {
-        evaluation_test: 'Evaluation test detected! Please complete the assessment.',
-        essay_test: 'Essay test detected! Please complete the written assignment.',
-        evaluation_report: 'Evaluation report detected! Please review the assessment results.',
-        essay_report: 'Essay report detected! Please review the essay feedback.'
+        evaluation_test:
+          "Evaluation test detected! Please complete the assessment.",
+        essay_test:
+          "Essay test detected! Please complete the written assignment.",
+        evaluation_report:
+          "Evaluation report detected! Please review the assessment results.",
+        essay_report:
+          "Essay report detected! Please review the essay feedback.",
       };
       const message = messages[foundKeyword as keyof typeof messages];
 
-      browser.runtime.sendMessage({
-        action: 'createNotification',
-        title: 'Miro Extension',
-        notificationMessage: message
-      }).catch(() => {
-        window.alert(message);
-      });
+      browser.runtime
+        .sendMessage({
+          action: "createNotification",
+          title: "Miro Extension",
+          notificationMessage: message,
+        })
+        .catch(() => {
+          window.alert(message);
+        });
     }
   }
 
@@ -540,9 +586,9 @@ const ButtonContainer: React.FC = () => {
 
     const success = await copyToClipboard(exerciseContent);
     if (success) {
-      window.alert('Exercise content copied to clipboard as Markdown!');
+      window.alert("Exercise content copied to clipboard as Markdown!");
     } else {
-      window.alert('Failed to copy exercise content to clipboard');
+      window.alert("Failed to copy exercise content to clipboard");
     }
   }
 
@@ -568,7 +614,7 @@ Format your response as follows:
     const serviceUrl = `${baseUrl}${encodedQuestion}`;
 
     try {
-      window.open(serviceUrl, '_blank');
+      window.open(serviceUrl, "_blank");
       logger.info(`Opened ${serviceName} with exercise question`);
     } catch (error) {
       logger.error(`Failed to open ${serviceName}: ${error}`);
@@ -596,9 +642,9 @@ Format your response as follows:
     const success = await copyToClipboard(fullPrompt);
 
     if (success) {
-      window.alert('AI prompt and exercise content copied to clipboard!');
+      window.alert("AI prompt and exercise content copied to clipboard!");
     } else {
-      window.alert('Failed to copy AI prompt to clipboard');
+      window.alert("Failed to copy AI prompt to clipboard");
     }
   }
 
@@ -625,7 +671,13 @@ Format your response as follows:
   };
 
   const openSettings = () => {
-    browser.runtime.openOptionsPage();
+    // content scriptからはbrowser.runtime.openOptionsPage()が使えないため
+    // background scriptにメッセージを送信して設定ページを開く
+    browser.runtime.sendMessage({ action: "openOptionsPage" }).catch(() => {
+      // フォールバック: 新しいタブで設定ページを直接開く
+      const optionsUrl = browser.runtime.getURL("options.html");
+      window.open(optionsUrl, "_blank");
+    });
   };
 
   return (
@@ -656,7 +708,7 @@ Format your response as follows:
       >
         {extensionEnabled ? "Enabled" : "Disabled"}
       </Button>
-      
+
       {extensionEnabled && (
         <>
           <Button
@@ -667,7 +719,7 @@ Format your response as follows:
           >
             Auto Play: {autoPlay ? "ON" : "OFF"}
           </Button>
-          
+
           <Button
             onClick={toggleBackgroundPlay}
             variant={backgroundPlay ? "default" : "secondary"}
@@ -678,7 +730,7 @@ Format your response as follows:
           </Button>
         </>
       )}
-      
+
       <Button
         onClick={openSettings}
         variant="secondary"

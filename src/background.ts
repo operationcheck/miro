@@ -73,6 +73,18 @@ browser.runtime.onMessage.addListener((message, _, sendResponse) => {
             sendResponse({ success: false, error: error.message });
           });
       }
+    } else if (message.action === "openOptionsPage") {
+      // Handle opening options page from content script
+      browser.runtime
+        .openOptionsPage()
+        .then(() => {
+          logger.info("Options page opened from content script");
+          sendResponse({ success: true });
+        })
+        .catch((error) => {
+          logger.error(`Failed to open options page: ${error}`);
+          sendResponse({ success: false, error: error.message });
+        });
     } else {
       // Send response immediately for unhandled messages
       sendResponse({ success: false, error: "Unknown action" });
