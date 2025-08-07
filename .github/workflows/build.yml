@@ -99,8 +99,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: release-${{ env.TIMESTAMP }}-${{ env.SHORT_SHA }}
-          name: Release ${{ env.SHORT_SHA }} (${{ env.TIMESTAMP }})
+          tag_name: release
+          name: Release ${{ env.SHORT_SHA }}
           body: |
             ## Miro Extension Release
             
