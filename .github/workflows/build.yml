@@ -121,7 +121,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            firefox.zip
+            dist/firefox.zip
             chrome.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
