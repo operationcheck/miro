@@ -496,15 +496,15 @@ const ButtonContainer: React.FC = () => {
     button.id = "videoPlayButton";
     button.style.cssText = `
       position: fixed;
-      z-index: 99999;
+      z-index: 999999;
       padding: 10px;
       background-color: #007bff;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      bottom: 130px;
-      right: 40px;
+      bottom: 20px;
+      left: 20px;
     `;
     button.innerHTML = "<span>Play Video</span>";
 
@@ -697,7 +697,7 @@ Format your response as follows:
         display: "flex",
         flexDirection: "column",
         gap: "8px",
-        zIndex: 9999,
+        zIndex: 99999,
       }}
     >
       <Button
