@@ -685,10 +685,10 @@ Format your response as follows:
   };
 
   const openSettings = () => {
-    // content scriptからはbrowser.runtime.openOptionsPage()が使えないため
-    // background scriptにメッセージを送信して設定ページを開く
+    // browser.runtime.openOptionsPage() is not available in content script
+    // Send message to background script to open options page
     browser.runtime.sendMessage({ action: "openOptionsPage" }).catch(() => {
-      // フォールバック: 新しいタブで設定ページを直接開く
+      // Fallback: directly open options page in new tab
       const optionsUrl = browser.runtime.getURL("options.html");
       window.open(optionsUrl, "_blank");
     });
