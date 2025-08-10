@@ -457,8 +457,22 @@ const ButtonContainer: React.FC = () => {
   function startMiroFunctionality() {
     checkForSpecialContent();
     startUrlMonitoring();
+    
+    // Start video player monitoring
+    startVideoPlayerMonitoring();
 
-    // Video player monitoring
+    // Set up mutation observer to handle DOM changes
+    const observer = new MutationObserver(() => {
+      videoPlayer = null;
+      isValidPath = undefined;
+      previousVideoPlayer = false;
+      startVideoPlayerMonitoring();
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  function startVideoPlayerMonitoring() {
     const intervalId = setInterval(() => {
       if (getIsValidPath()) {
         videoPlayer = getVideoPlayer();
