@@ -1,6 +1,6 @@
 {
   "name": "miro",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An auto-play tool for report videos with the latest features",
   "type": "module",
   "scripts": {

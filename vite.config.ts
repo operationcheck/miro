@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 const manifest = defineManifest({
   manifest_version: 3,
   name: "Miro",
-  version: "1.0.1",
+  version: "1.0.2",
   description: "An auto-play tool for report videos with the latest features",
   author: { email: "operationcheck@proton.me" },
   permissions: ["contextMenus", "storage", "notifications"],
