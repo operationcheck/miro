@@ -457,23 +457,8 @@ const ButtonContainer: React.FC = () => {
   function startMiroFunctionality() {
     checkForSpecialContent();
     startUrlMonitoring();
-    
-    // Start video player monitoring
-    startVideoPlayerMonitoring();
 
-    // Set up mutation observer to handle DOM changes
-    const observer = new MutationObserver(() => {
-      videoPlayer = null;
-      isValidPath = undefined;
-      previousVideoPlayer = false;
-      startVideoPlayerMonitoring();
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  function startVideoPlayerMonitoring() {
-    const intervalId = setInterval(() => {
+    let intervalId = setInterval(() => {
       if (getIsValidPath()) {
         videoPlayer = getVideoPlayer();
         if (videoPlayer !== null) {
@@ -501,6 +486,45 @@ const ButtonContainer: React.FC = () => {
         }
       }
     }, 500);
+
+    // Set up mutation observer to handle DOM changes
+    const observer = new MutationObserver(() => {
+      videoPlayer = null;
+      isValidPath = undefined;
+      intervalId = setInterval(() => {
+        // Restart the interval when DOM changes
+        if (getIsValidPath()) {
+          videoPlayer = getVideoPlayer();
+          if (videoPlayer !== null) {
+            if (!previousVideoPlayer) {
+              logger.info("Video player found.");
+              createPlayButton();
+            }
+            previousVideoPlayer = true;
+
+            videoPlayer.setAttribute("playsinline", "");
+            videoPlayer.setAttribute("muted", "");
+            videoPlayer.setAttribute("autoplay", "");
+            videoPlayer.setAttribute("controls", "");
+
+            if (videoPlayer.ended) {
+              handleVideoEnd();
+            } else if (userInteracted && autoPlayEnabled && videoPlayer.paused) {
+              videoPlayer.play().catch(logger.error);
+            } else {
+              videoPlayer.addEventListener("ended", handleVideoEnd);
+            }
+
+            clearInterval(intervalId);
+          } else if (Date.now() - lastVideoPlayerTime > COOL_TIME) {
+            logger.info("Video player not found.");
+            lastVideoPlayerTime = Date.now();
+          }
+        }
+      }, 500);
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function createPlayButton() {
