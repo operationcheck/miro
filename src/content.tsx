@@ -6,6 +6,92 @@ import browser from "webextension-polyfill";
 import { Button } from "./components/Button";
 import logger from "./logger";
 
+// Notification utility function
+async function sendNotification(title: string, message: string): Promise<void> {
+  try {
+    // Check if extension context is valid before sending message
+    if (!browser.runtime?.id) {
+      logger.error("Extension context is invalidated, using fallback alert");
+      window.alert(message);
+      return;
+    }
+
+    // Send message to background script to create notification
+    const response = await browser.runtime.sendMessage({
+      action: "createNotification",
+      title: title,
+      notificationMessage: message,
+    });
+
+    if (
+      response &&
+      typeof response === "object" &&
+      "success" in response &&
+      response.success
+    ) {
+      logger.info(`Notification sent: ${message}`);
+    } else {
+      const errorMsg =
+        response && typeof response === "object" && "error" in response
+          ? response.error
+          : "Unknown error";
+      logger.error(`Failed to create notification: ${errorMsg}`);
+      // Fallback to alert if notification fails
+      window.alert(message);
+    }
+  } catch (error) {
+    logger.error(`Failed to send notification message: ${error}`);
+
+    // Check if it's a context invalidation error
+    if (
+      error instanceof Error &&
+      error.message &&
+      error.message.includes("Extension context invalidated")
+    ) {
+      logger.warn(
+        "Extension context invalidated, attempting to use native notification API"
+      );
+
+      // Try using native notification API as fallback
+      if ("Notification" in window) {
+        if (Notification.permission === "granted") {
+          try {
+            new Notification(title, {
+              body: message,
+              icon: "src/assets/icon128.png",
+            });
+            logger.info(`Native notification sent: ${message}`);
+            return;
+          } catch (nativeError) {
+            logger.error(
+              `Failed to create native notification: ${nativeError}`
+            );
+          }
+        } else if (Notification.permission !== "denied") {
+          try {
+            const permission = await Notification.requestPermission();
+            if (permission === "granted") {
+              new Notification(title, {
+                body: message,
+                icon: "src/assets/icon128.png",
+              });
+              logger.info(`Native notification sent: ${message}`);
+              return;
+            }
+          } catch (nativeError) {
+            logger.error(
+              `Failed to request notification permission: ${nativeError}`
+            );
+          }
+        }
+      }
+    }
+
+    // Final fallback to alert
+    window.alert(message);
+  }
+}
+
 // Miro functionality constants
 const RGB_COLOR_GREEN = "rgb(0, 197, 65)";
 const TYPE_MOVIE_ROUNDED_PLUS = "movie-rounded-plus";
@@ -161,6 +247,12 @@ function handleVideoEnd(): void {
     previousBackgroundAutoPlay = false;
     logger.info("Video ended.");
 
+    // Send notification for video completion
+    void sendNotification(
+      "Video Completed",
+      "Current video has finished playing."
+    );
+
     const list = getList();
     const index = findIndex(list);
     if (index !== -1) {
@@ -172,6 +264,11 @@ function handleVideoEnd(): void {
         .catch(logger.error);
     } else if (!completed) {
       completed = true;
+      // Send notification for all videos completed
+      void sendNotification(
+        "All Videos Completed",
+        "All videos in this chapter have been completed!"
+      );
       window.alert("All videos have been completed.");
       logger.info("All videos have been completed.");
 
@@ -509,7 +606,11 @@ const ButtonContainer: React.FC = () => {
 
             if (videoPlayer.ended) {
               handleVideoEnd();
-            } else if (userInteracted && autoPlayEnabled && videoPlayer.paused) {
+            } else if (
+              userInteracted &&
+              autoPlayEnabled &&
+              videoPlayer.paused
+            ) {
               videoPlayer.play().catch(logger.error);
             } else {
               videoPlayer.addEventListener("ended", handleVideoEnd);
@@ -602,15 +703,8 @@ const ButtonContainer: React.FC = () => {
       };
       const message = messages[foundKeyword as keyof typeof messages];
 
-      browser.runtime
-        .sendMessage({
-          action: "createNotification",
-          title: "Miro Extension",
-          notificationMessage: message,
-        })
-        .catch(() => {
-          window.alert(message);
-        });
+      // Send notification using the utility function
+      void sendNotification("Test Detected", message);
     }
   }
 

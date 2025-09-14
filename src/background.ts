@@ -16,49 +16,15 @@ browser.runtime.onMessage.addListener((message, _, sendResponse) => {
           ? message.notificationMessage
           : "";
 
-      // Check and request notification permission if needed
-      browser.permissions
-        .contains({ permissions: ["notifications"] })
-        .then((hasPermission) => {
-          if (!hasPermission) {
-            logger.warn(
-              "Notification permission not granted, requesting permission..."
-            );
-            browser.permissions
-              .request({ permissions: ["notifications"] })
-              .then((granted) => {
-                if (granted) {
-                  createNotificationNow();
-                } else {
-                  logger.error("Notification permission denied by user");
-                  sendResponse({
-                    success: false,
-                    error: "Notification permission denied",
-                  });
-                }
-              })
-              .catch((error) => {
-                logger.error(
-                  `Failed to request notification permission: ${error}`
-                );
-                sendResponse({ success: false, error: error.message });
-              });
-          } else {
-            createNotificationNow();
-          }
-        })
-        .catch((error) => {
-          logger.error(`Failed to check notification permission: ${error}`);
-          // Try to create notification anyway
-          createNotificationNow();
-        });
+      // Since notification permission is declared in manifest.json, we can create notifications directly
+      createNotificationNow();
 
       function createNotificationNow() {
         const notificationId = `miro-${Date.now()}`;
         browser.notifications
           .create(notificationId, {
             type: "basic",
-            iconUrl: "images/icon128.png",
+            iconUrl: "src/assets/icon128.png",
             title: title,
             message: notificationMessage,
           })
