@@ -10,12 +10,18 @@ function Options() {
   const [backgroundAutoPlay, setBackgroundAutoPlay] = useState(false);
   const [returnToChapter, setReturnToChapter] = useState(true);
   const [hideUI, setHideUI] = useState(false);
-  
+
   // UI settings
   const [buttonPosition, setButtonPosition] = useState<
     "right-top" | "right-bottom" | "left-top" | "left-bottom"
   >("right-top");
   const [minimalMode, setMinimalMode] = useState(false);
+
+  // Notification settings
+  const [notifyVideoCompleted, setNotifyVideoCompleted] = useState(false);
+  const [notifyAllVideosCompleted, setNotifyAllVideosCompleted] =
+    useState(false);
+  const [notifyTestDetected, setNotifyTestDetected] = useState(true);
 
   useEffect(() => {
     // Listen for changes in storage
@@ -52,6 +58,19 @@ function Options() {
       if (changes.minimalMode !== undefined) {
         setMinimalMode(changes.minimalMode.newValue as boolean);
       }
+      if (changes.notifyVideoCompleted !== undefined) {
+        setNotifyVideoCompleted(
+          changes.notifyVideoCompleted.newValue as boolean
+        );
+      }
+      if (changes.notifyAllVideosCompleted !== undefined) {
+        setNotifyAllVideosCompleted(
+          changes.notifyAllVideosCompleted.newValue as boolean
+        );
+      }
+      if (changes.notifyTestDetected !== undefined) {
+        setNotifyTestDetected(changes.notifyTestDetected.newValue as boolean);
+      }
     };
 
     browser.storage.onChanged.addListener(handleStorageChange);
@@ -60,12 +79,15 @@ function Options() {
     (async () => {
       const result = await browser.storage.local.get([
         "enabled",
-        "autoPlayEnabled", 
+        "autoPlayEnabled",
         "backgroundAutoPlay",
         "returnToChapter",
         "hideUI",
         "buttonPosition",
         "minimalMode",
+        "notifyVideoCompleted",
+        "notifyAllVideosCompleted",
+        "notifyTestDetected",
       ]);
 
       if (result.enabled !== undefined) {
@@ -84,10 +106,25 @@ function Options() {
         setHideUI(result.hideUI as boolean);
       }
       if (result.buttonPosition) {
-        setButtonPosition(result.buttonPosition as "right-top" | "right-bottom" | "left-top" | "left-bottom");
+        setButtonPosition(
+          result.buttonPosition as
+            | "right-top"
+            | "right-bottom"
+            | "left-top"
+            | "left-bottom"
+        );
       }
       if (result.minimalMode !== undefined) {
         setMinimalMode(result.minimalMode as boolean);
+      }
+      if (result.notifyVideoCompleted !== undefined) {
+        setNotifyVideoCompleted(result.notifyVideoCompleted as boolean);
+      }
+      if (result.notifyAllVideosCompleted !== undefined) {
+        setNotifyAllVideosCompleted(result.notifyAllVideosCompleted as boolean);
+      }
+      if (result.notifyTestDetected !== undefined) {
+        setNotifyTestDetected(result.notifyTestDetected as boolean);
       }
     })();
     return () => {
@@ -105,12 +142,14 @@ function Options() {
         hideUI,
         buttonPosition,
         minimalMode,
+        notifyVideoCompleted,
+        notifyAllVideosCompleted,
+        notifyTestDetected,
       })
       .then(() => {
         alert("Settings have been saved");
       });
   };
-
 
   return (
     <div style={{ padding: "20px", maxWidth: "600px", margin: "0 auto" }}>
@@ -216,6 +255,39 @@ function Options() {
               onChange={(e) => setMinimalMode(e.target.checked)}
             />
             Use minimal button mode (icon only)
+          </label>
+        </div>
+      </div>
+      <div style={{ marginBottom: "20px" }}>
+        <h2>Notification Settings</h2>
+        <div style={{ marginBottom: "10px" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <input
+              type="checkbox"
+              checked={notifyVideoCompleted}
+              onChange={(e) => setNotifyVideoCompleted(e.target.checked)}
+            />
+            Notify when a video is completed
+          </label>
+        </div>
+        <div style={{ marginBottom: "10px" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <input
+              type="checkbox"
+              checked={notifyAllVideosCompleted}
+              onChange={(e) => setNotifyAllVideosCompleted(e.target.checked)}
+            />
+            Notify when all videos in a chapter are completed
+          </label>
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <input
+              type="checkbox"
+              checked={notifyTestDetected}
+              onChange={(e) => setNotifyTestDetected(e.target.checked)}
+            />
+            Notify when a test is detected (default: ON)
           </label>
         </div>
       </div>

@@ -122,6 +122,11 @@ let userInteracted = false;
 let lastCheckedUrl = "";
 let urlCheckIntervalId: number;
 
+// Notification settings
+let notifyVideoCompleted = false;
+let notifyAllVideosCompleted = false;
+let notifyTestDetected = true;
+
 // Miro utility functions
 function getIsValidPath(): boolean {
   if (isValidPath === undefined) {
@@ -247,11 +252,13 @@ function handleVideoEnd(): void {
     previousBackgroundAutoPlay = false;
     logger.info("Video ended.");
 
-    // Send notification for video completion
-    void sendNotification(
-      "Video Completed",
-      "Current video has finished playing."
-    );
+    // Send notification for video completion if enabled
+    if (notifyVideoCompleted) {
+      void sendNotification(
+        "Video Completed",
+        "Current video has finished playing."
+      );
+    }
 
     const list = getList();
     const index = findIndex(list);
@@ -264,11 +271,13 @@ function handleVideoEnd(): void {
         .catch(logger.error);
     } else if (!completed) {
       completed = true;
-      // Send notification for all videos completed
-      void sendNotification(
-        "All Videos Completed",
-        "All videos in this chapter have been completed!"
-      );
+      // Send notification for all videos completed if enabled
+      if (notifyAllVideosCompleted) {
+        void sendNotification(
+          "All Videos Completed",
+          "All videos in this chapter have been completed!"
+        );
+      }
       window.alert("All videos have been completed.");
       logger.info("All videos have been completed.");
 
@@ -450,6 +459,9 @@ const ButtonContainer: React.FC = () => {
         "backgroundAutoPlay",
         "returnToChapter",
         "hideUI",
+        "notifyVideoCompleted",
+        "notifyAllVideosCompleted",
+        "notifyTestDetected",
       ]);
 
       if (settings.buttonPosition) {
@@ -481,6 +493,15 @@ const ButtonContainer: React.FC = () => {
       }
       if (settings.hideUI !== undefined) {
         hideUI = settings.hideUI as boolean;
+      }
+      if (settings.notifyVideoCompleted !== undefined) {
+        notifyVideoCompleted = settings.notifyVideoCompleted as boolean;
+      }
+      if (settings.notifyAllVideosCompleted !== undefined) {
+        notifyAllVideosCompleted = settings.notifyAllVideosCompleted as boolean;
+      }
+      if (settings.notifyTestDetected !== undefined) {
+        notifyTestDetected = settings.notifyTestDetected as boolean;
       }
 
       // Start miro functionality
@@ -515,6 +536,16 @@ const ButtonContainer: React.FC = () => {
       if (changes.backgroundAutoPlay !== undefined) {
         backgroundAutoPlay = changes.backgroundAutoPlay.newValue as boolean;
         setBackgroundPlay(changes.backgroundAutoPlay.newValue as boolean);
+      }
+      if (changes.notifyVideoCompleted !== undefined) {
+        notifyVideoCompleted = changes.notifyVideoCompleted.newValue as boolean;
+      }
+      if (changes.notifyAllVideosCompleted !== undefined) {
+        notifyAllVideosCompleted = changes.notifyAllVideosCompleted
+          .newValue as boolean;
+      }
+      if (changes.notifyTestDetected !== undefined) {
+        notifyTestDetected = changes.notifyTestDetected.newValue as boolean;
       }
     };
 
@@ -703,8 +734,10 @@ const ButtonContainer: React.FC = () => {
       };
       const message = messages[foundKeyword as keyof typeof messages];
 
-      // Send notification using the utility function
-      void sendNotification("Test Detected", message);
+      // Send notification using the utility function if enabled
+      if (notifyTestDetected) {
+        void sendNotification("Test Detected", message);
+      }
     }
   }
 
