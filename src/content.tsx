@@ -560,6 +560,8 @@ const ButtonContainer: React.FC = () => {
           handleCopyExercise();
         } else if (action === "askChatGPT") {
           handleAskAI("ChatGPT", "https://chatgpt.com/?q=");
+        } else if (action === "askGemini") {
+          handleAskAI("Gemini", "https://www.google.com/search?udm=50&q=");
         } else if (action === "askClaude") {
           handleAskAI("Claude", "https://claude.ai/new?q=");
         } else if (action === "askGenspark") {

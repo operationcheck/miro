@@ -104,6 +104,13 @@ browser.runtime.onInstalled.addListener(() => {
     });
 
     browser.contextMenus.create({
+      id: "askGemini",
+      parentId: "askAI",
+      title: "Gemini",
+      contexts: ["all"],
+    });
+
+    browser.contextMenus.create({
       id: "askClaude",
       parentId: "askAI",
       title: "Claude",
@@ -185,6 +192,15 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
           .sendMessage(tab.id, { action: "askChatGPT" })
           .catch((error) => {
             logger.error(`Failed to send askChatGPT message: ${error}`);
+          });
+      }
+    } else if (info.menuItemId === "askGemini") {
+      // Send message to content script to ask Gemini about exercise
+      if (tab?.id) {
+        browser.tabs
+          .sendMessage(tab.id, { action: "askGemini" })
+          .catch((error) => {
+            logger.error(`Failed to send askGemini message: ${error}`);
           });
       }
     } else if (info.menuItemId === "askClaude") {
