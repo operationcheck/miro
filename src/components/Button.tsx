@@ -3,7 +3,13 @@ import type { ReactNode } from "react";
 interface ButtonProps {
   onClick: () => void;
   disabled?: boolean;
-  variant?: "primary" | "danger" | "warning" | "other" | "default" | "secondary";
+  variant?:
+    | "primary"
+    | "danger"
+    | "warning"
+    | "other"
+    | "default"
+    | "secondary";
   children: ReactNode;
   minimize?: boolean;
   icon?: ReactNode;
