@@ -441,6 +441,7 @@ const ButtonContainer: React.FC = () => {
   const [extensionEnabled, setExtensionEnabled] = useState(true);
   const [autoPlay, setAutoPlay] = useState(true);
   const [backgroundPlay, setBackgroundPlay] = useState(false);
+  const [hideUIState, setHideUIState] = useState(false);
 
   // Initialize miro functionality and load settings
   useEffect(() => {
@@ -493,6 +494,7 @@ const ButtonContainer: React.FC = () => {
       }
       if (settings.hideUI !== undefined) {
         hideUI = settings.hideUI as boolean;
+        setHideUIState(settings.hideUI as boolean);
       }
       if (settings.notifyVideoCompleted !== undefined) {
         notifyVideoCompleted = settings.notifyVideoCompleted as boolean;
@@ -546,6 +548,11 @@ const ButtonContainer: React.FC = () => {
       }
       if (changes.notifyTestDetected !== undefined) {
         notifyTestDetected = changes.notifyTestDetected.newValue as boolean;
+      }
+      if (changes.hideUI !== undefined) {
+        hideUI = changes.hideUI.newValue as boolean;
+        setHideUIState(changes.hideUI.newValue as boolean);
+        logger.info(`Hide UI is now ${hideUI ? "enabled" : "disabled"}`);
       }
     };
 
@@ -846,6 +853,11 @@ Format your response as follows:
       window.open(optionsUrl, "_blank");
     });
   };
+
+  // Don't render ButtonContainer if hideUI is enabled
+  if (hideUIState) {
+    return null;
+  }
 
   return (
     <div
